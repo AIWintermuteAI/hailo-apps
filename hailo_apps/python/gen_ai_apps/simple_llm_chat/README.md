@@ -83,3 +83,11 @@ The example demonstrates a basic LLM interaction:
 
 This is a simplified example. For more advanced features like context management, streaming, and interactive chat, see the full [Voice Assistant](../voice_assistant/) application.
 
+curl http://localhost:8000/api/generate -d '{
+  "model": "qwen2:1.5b",
+  "prompt": "Why is the sky blue?"
+}'
+
+curl --silent http://localhost:8000/api/chat \
+     -H 'Content-Type: application/json' \
+     -d '{"model": "qwen2:1.5b", "messages": [{"role": "user", "content": "Tell me a joke about cats."}]}'

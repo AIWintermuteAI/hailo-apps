@@ -1,5 +1,6 @@
 import argparse
 import sys
+import time
 
 from hailo_platform import VDevice
 from hailo_platform.genai import LLM
@@ -48,19 +49,32 @@ def main():
         print("✓ Model loaded successfully")
 
         prompt = [
-            {"role": "system", "content": [{"type": "text", "text": 'You are a helpful assistant.'}]},
-            {"role": "user", "content": [{"type": "text", "text": 'Tell a short joke.'}]}
+            {"role": "system", "content": [{"type": "text", "text": 'You are a helpful and humorous assistant.'}]},
+            {"role": "user", "content": [{"type": "text", "text": 'Tell a joke about programming.'}]}
         ]
 
         print("[3/4] Sending prompt to LLM...")
         print(f"   User prompt: '{prompt[1]['content'][0]['text']}'")
-        response = llm.generate_all(prompt=prompt, temperature=0.1, seed=42, max_generated_tokens=200)
-
-        print("[4/4] Response received:")
-        print("-" * 60)
-        print(response.split(". [{'type'")[0])
-        print("-" * 60)
+        #response = llm.generate_all(prompt=prompt, temperature=0.1, seed=42, max_generated_tokens=200)
+        start_time = time.time()
+        first_token = False
+        num_tokens = 0
+        with llm:
+            with llm.generate(prompt, temperature=0.8) as gen:
+                for token in gen:
+                    if not first_token:
+                        first_token = True
+                        time_to_first_token = time.time() - start_time
+                    print(token, end='', flush=True)
+                    num_tokens += 1
+        # print("[4/4] Response received:")
+        # print("-" * 60)
+        # print(response.split(". [{'type'")[0])
+        # print("-" * 60)
         print("\n✓ Example completed successfully")
+        print(f"TTFT {time_to_first_token}")
+        tokens_per_s = num_tokens / (time.time() - start_time)
+        print(f"TPS {tokens_per_s}")
 
     except Exception as e:
         logger.error(f"Error occurred: {e}", exc_info=True)
